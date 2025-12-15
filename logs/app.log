@@ -1,0 +1,3 @@
+{"time": "2025-12-14 14:07:29,534", "level": "INFO", "logger": "ambulance", "message": "Transferencia iniciada por admin → {'ambulance': 'F1', 'paramedic': 'rodz', 'items': [{'item_id': 1, 'quantity': 6}]}"}
+{"time": "2025-12-14 14:07:29,545", "level": "INFO", "logger": "ambulance", "message": "transfer.completed → ambulance=F1, items=1"}
+{"time": "2025-12-14 14:07:29,547", "level": "INFO", "logger": "ambulance", "message": "Transferencia completada: rodz → F1 (1 ítems)"}
