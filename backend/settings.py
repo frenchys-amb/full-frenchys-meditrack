@@ -109,7 +109,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Base de datos
 # -------------------------------
 # Leer la variable de entorno DATABASE_URL (que Render proporciona)
-DATABASE_URL = os.getenv('DATABASE_URL')
+#DATABASE_URL = os.getenv('DATABASE_URL')
 
 #if DATABASE_URL:
     # Usar dj-database-url para parsear la URL de Render
@@ -133,30 +133,35 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 # settings.py
 # ... (código existente)
 
+# -------------------------------
+# Base de datos (Configuración Supabase / Local)
+# -------------------------------
+
+# 1. Intentamos obtener la URL de Render (Supabase Pooler Puerto 6543)
+DATABASE_URL = os.getenv('DATABASE_URL')
+
 if DATABASE_URL:
-    # Usar dj-database-url para parsear la URL de Render
+    # --- CONFIGURACIÓN PARA PRODUCCIÓN (RENDER + SUPABASE) ---
     DATABASES = {
-        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+    # Forzamos SSL, necesario para que Supabase no rechace la conexión
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require',
     }
 else:
-    # --- CONFIGURACIÓN LOCAL (FALLBACK) ---
-    # Usaremos 127.0.0.1 para evitar conflictos de conexión con IPv6.
-    # Si la base de datos no existe, ejecuta 'createdb app_frenchys_db' en psql.
+    # --- CONFIGURACIÓN PARA DESARROLLO LOCAL ---
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            
-            # NOMBRE DE LA BASE DE DATOS LOCAL
             'NAME': os.getenv("DB_NAME", "app_frenchys_db"), 
-            
-            # USUARIO DE POSTGRESQL (¡CAMBIA ESTOS VALORES POR TUS CREDENCIALES REALES!)
-            # Si usas Homebrew/Postgres.app, el usuario es a menudo el nombre de tu Mac.
-            'USER': os.getenv("DB_USER", "yalinnettevazquez"), # <--- ⚠️ REEMPLAZA "yalinnettevazquez" con tu usuario real
-            'PASSWORD': os.getenv("DB_PASSWORD", ""),         # <--- ⚠️ REEMPLAZA "" con tu contraseña real
-            
-            # HOST: Usamos la IP explícita para evitar errores de conexión (FATAL: connection failed)
+            'USER': os.getenv("DB_USER", "yalinnettevazquez"),
+            'PASSWORD': os.getenv("DB_PASSWORD", ""), 
             'HOST': os.getenv("DB_HOST", "127.0.0.1"), 
-            
             'PORT': os.getenv("DB_PORT", "5432"),
         }
     }
@@ -240,6 +245,7 @@ USE_TZ = True
 # Archivos estáticos
 # -------------------------------
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # -------------------------------
