@@ -5,11 +5,9 @@ from datetime import timedelta
 import logging
 import logging.config
 import dj_database_url
-from decouple import config
 
-log = logging.getLogger("ambulance")
 # -------------------------------
-# 🔹 Cargar variables .env ANTES de usarlas
+# 🔹 Configuración de Rutas y Carga de .env
 # -------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
@@ -18,27 +16,14 @@ load_dotenv(BASE_DIR / ".env")
 # Configuración de seguridad
 # -------------------------------
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default")
-DEBUG = os.getenv("DEBUG", "True") == "True"
+DEBUG = os.getenv("DEBUG", "False") == "True" # En Render suele ser False
 
-# Hosts permitidos
-ALLOWED_HOSTS = []
-
-# --- 1. Hosts de Render ---
+ALLOWED_HOSTS = ['mi-backend-frenchys.onrender.com', 'localhost', '127.0.0.1']
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
-    # Si estamos en Render, aceptamos su hostname
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-# --- 2. Hosts de Producción (Dominio Propio) ---
-# Asegúrate de que estas variables se usen solo si el dominio final está listo
-PROD_HOSTS = os.getenv("PROD_HOSTS", "").split(",")
-ALLOWED_HOSTS.extend([host.strip() for host in PROD_HOSTS if host.strip()])
-
-# --- 3. Hosts de Desarrollo ---
-if DEBUG:
-    ALLOWED_HOSTS.append("*")
-
-# Seguridad HTTPS
+# Seguridad HTTPS en Producción
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
@@ -47,15 +32,10 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
 else:
-    SECURE_SSL_REDIRECT = False
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_BROWSER_XSS_FILTER = False
-    SECURE_CONTENT_TYPE_NOSNIFF = False
     X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # -------------------------------
-# Aplicaciones
+# Aplicaciones e INSTALLED_APPS
 # -------------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -63,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic', # Añadido para desarrollo
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
@@ -73,10 +54,11 @@ INSTALLED_APPS = [
 ]
 
 # -------------------------------
-# Middleware
+# Middleware (WhiteNoise añadido)
 # -------------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # <--- OBLIGATORIO PARA RENDER
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -106,42 +88,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # -------------------------------
-# Base de datos
+# 🔹 Base de Datos (Supabase Directa)
 # -------------------------------
-# Leer la variable de entorno DATABASE_URL (que Render proporciona)
-#DATABASE_URL = os.getenv('DATABASE_URL')
-
-#if DATABASE_URL:
-    # Usar dj-database-url para parsear la URL de Render
- #   DATABASES = {
-  #      'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
-   # }
-#else:
-    # Fallback a la configuración local tradicional (si no se encuentra DATABASE_URL)
- #   DATABASES = {
-  #      'default': {
-   #         'ENGINE': 'django.db.backends.postgresql',
-    #        'NAME': os.getenv("DB_NAME", "app_frenchys_db"),
-     #       'USER': os.getenv("DB_USER", "postgres"),
-      #      'PASSWORD': os.getenv("DB_PASSWORD", "152889"), # Si no encuentra DB_PASSWORD, usa '152889'
-       #     'HOST': os.getenv("DB_HOST", "localhost"),
-        #    'PORT': os.getenv("DB_PORT", "5432"),
-        #}
-    #}
-
-
-# settings.py
-# ... (código existente)
-
-# -------------------------------
-# Base de datos (Configuración Supabase / Local)
-# -------------------------------
-
-# 1. Intentamos obtener la URL de Render (Supabase Pooler Puerto 6543)
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
-    # --- CONFIGURACIÓN PARA PRODUCCIÓN (RENDER + SUPABASE) ---
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -149,41 +100,21 @@ if DATABASE_URL:
             conn_health_checks=True,
         )
     }
-    # Forzamos SSL, necesario para que Supabase no rechace la conexión
+    # Forzamos SSL para Supabase y evitamos errores de pooler
     DATABASES['default']['OPTIONS'] = {
         'sslmode': 'require',
     }
 else:
-    # --- CONFIGURACIÓN PARA DESARROLLO LOCAL ---
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv("DB_NAME", "app_frenchys_db"), 
-            'USER': os.getenv("DB_USER", "yalinnettevazquez"),
-            'PASSWORD': os.getenv("DB_PASSWORD", ""), 
-            'HOST': os.getenv("DB_HOST", "127.0.0.1"), 
-            'PORT': os.getenv("DB_PORT", "5432"),
+            'NAME': 'app_frenchys_db',
+            'USER': 'postgres',
+            'PASSWORD': 'your_local_password',
+            'HOST': '127.0.0.1',
+            'PORT': '5432',
         }
     }
-# -------------------------------
-# Validadores de contraseña
-# -------------------------------
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
-
-# -------------------------------
-# Password Hashers
-# -------------------------------
-PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.Argon2PasswordHasher',
-    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
-    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
-    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
-]
 
 # -------------------------------
 # Django REST Framework + JWT
@@ -191,93 +122,39 @@ PASSWORD_HASHERS = [
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'ambulance.pagination.OptionalPageNumberPagination',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-
-    # ----------------------------
-    # Autenticación y permisos
-    # ----------------------------
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-
-    # ----------------------------
-    # Throttling (Rate Limit)
-    # ----------------------------
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.ScopedRateThrottle',
-        'rest_framework.throttling.AnonRateThrottle',
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'login': '5/min',      # Máximo 5 intentos/min en /secure-login/
-        'anon': '60/min',      # Límite general para usuarios NO autenticados
-    },
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
     "ALGORITHM": "HS512",
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
-    "UPDATE_LAST_LOGIN": True,
-}
-
-SPECTACULAR_SETTINGS = {
-    "TITLE": "Meditrack API",
-    "DESCRIPTION": "API para gestión de inventario, ambulancias y transferencias.",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # -------------------------------
-# Internacionalización
-# -------------------------------
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
-
-# -------------------------------
-# Archivos estáticos
+# 🔹 Archivos Estáticos (WhiteNoise Config)
 # -------------------------------
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# Esto permite que los estilos se vean en Render
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # -------------------------------
 # CORS / CSRF
 # -------------------------------
-CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+CORS_ALLOW_ALL_ORIGINS = True # Ajustar en producción real
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:3000").split(",")
-
-# -------------------------------
-# Twilio SMS Configuración
-# -------------------------------
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_FROM_NUMBER = os.getenv("TWILIO_FROM_NUMBER")
-ADMIN_PHONE = os.getenv("ADMIN_PHONE")
-
-# -------------------------------
-# Debug info
-# -------------------------------
-if DEBUG:
-    log.info("DEBUG MODE ACTIVADO")
-    log.info(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
-    log.info(f"CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
-    log.info(f"CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
-
-    # Crear carpeta de logs si no existe
-LOG_DIR = BASE_DIR / "logs"
-LOG_DIR.mkdir(exist_ok=True)
-
-
+CSRF_TRUSTED_ORIGINS = ["https://mi-backend-frenchys.onrender.com", "http://localhost:3000"]
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
