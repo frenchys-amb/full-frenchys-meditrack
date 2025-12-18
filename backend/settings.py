@@ -96,10 +96,14 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR.parent, 'staticfiles')
 
 # Configuración para que Django encuentre los archivos de Vite
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR.parent, 'frontend', 'dist', 'assets'),
-]
-
+STATICFILES_DIRS = []
+if os.path.exists(FRONTEND_DIR):
+    STATICFILES_DIRS.append(FRONTEND_DIR)
+    # También agregamos assets si existe
+    assets_path = os.path.join(FRONTEND_DIR, 'assets')
+    if os.path.exists(assets_path):
+        STATICFILES_DIRS.append(assets_path)
+        
 if not DEBUG:
     # Esto es lo que ya tienes configurado
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
