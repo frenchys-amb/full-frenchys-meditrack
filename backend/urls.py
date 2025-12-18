@@ -1,21 +1,7 @@
-"""
-URL configuration for backend project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.conf import settings # IMPORTANTE
+from django.conf.urls.static import static # IMPORTANTE
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -28,19 +14,23 @@ from django.views.generic.base import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('ambulance.urls')),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # login
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # refresh
-    path("api/users/", include("ambulance.urls")),  # ✅ agrega esta línea
-    #path("api/token/", ...),  # tus rutas de login
-    # ✅ OpenAPI JSON
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path("api/users/", include("ambulance.urls")),
+    
+    # OpenAPI y Docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-
-    # ✅ Swagger UI
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-
-# 1. Solución para el favicon (redirige a nada si no existe)
-    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico')),
-    # ✅ Redoc
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+
+    # Favicon
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico')),
+]
+
+# Servir archivos estáticos (CSS, JS, Imágenes)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# EL CATCH-ALL SIEMPRE AL FINAL DE TODO
+urlpatterns += [
     re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]
