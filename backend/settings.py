@@ -93,18 +93,14 @@ TEMPLATES = [
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_DIRS = []
-# Solo agregamos la ruta si físicamente existe en el servidor
-if os.path.exists(FRONTEND_DIR):
-    STATICFILES_DIRS.append(FRONTEND_DIR)
-    # Agregamos assets explícitamente si existe
-    assets_path = os.path.join(FRONTEND_DIR, 'assets')
-    if os.path.exists(assets_path):
-        STATICFILES_DIRS.append(assets_path)
-
+STATICFILES_DIRS = [
+    FRONTEND_DIR,
+]
+# 4. Configuración de WhiteNoise (Añade estas líneas abajo)
 if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-    WHITENOISE_MANIFEST_STRICT = False  # <--- ESTO EVITA EL ERROR 500 SI FALTA EL FAVICON
+    # Esto es CLAVE: permite que WhiteNoise encuentre los archivos con nombres de Vite
+    WHITENOISE_INDEX_FILE = True
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
