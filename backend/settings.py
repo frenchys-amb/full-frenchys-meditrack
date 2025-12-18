@@ -71,13 +71,13 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'backend.urls'
 
 # 1. Definir la ruta a la carpeta de compilación de React/Vite
-FRONTEND_DIR = os.path.join(BASE_DIR.parent, 'frontend', 'dist')
+FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend', 'dist')
 
 # 2. Configurar TEMPLATES para encontrar el index.html
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [FRONTEND_DIR], # <--- Aquí Django buscará el index.html
+        'DIRS': [FRONTEND_DIR] if os.path.exists(FRONTEND_DIR) else [BASE_DIR],# <--- Aquí Django buscará el index.html
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -94,17 +94,17 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_DIRS = []
-# Solo si existe la carpeta 'dist' (creada por npm run build), la agregamos
+# Solo agregamos la ruta si físicamente existe en el servidor
 if os.path.exists(FRONTEND_DIR):
     STATICFILES_DIRS.append(FRONTEND_DIR)
-    # Vite mete el JS/CSS en 'assets' dentro de 'dist'
+    # Agregamos assets explícitamente si existe
     assets_path = os.path.join(FRONTEND_DIR, 'assets')
     if os.path.exists(assets_path):
         STATICFILES_DIRS.append(assets_path)
 
 if not DEBUG:
-    # Esto es lo que ya tienes configurado
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    WHITENOISE_MANIFEST_STRICT = False  # <--- ESTO EVITA EL ERROR 500 SI FALTA EL FAVICON
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 

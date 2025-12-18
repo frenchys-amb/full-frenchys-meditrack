@@ -23,6 +23,7 @@ from drf_spectacular.views import (
     SpectacularRedocView,
 )
 from django.views.generic import TemplateView
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -37,6 +38,8 @@ urlpatterns = [
     # ✅ Swagger UI
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
 
+# 1. Solución para el favicon (redirige a nada si no existe)
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico')),
     # ✅ Redoc
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
