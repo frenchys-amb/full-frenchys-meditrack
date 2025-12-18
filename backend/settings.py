@@ -93,17 +93,17 @@ TEMPLATES = [
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# 2. Agrega AMBAS carpetas a STATICFILES_DIRS
+# 2. Configuración de carpetas de búsqueda
 STATICFILES_DIRS = [
-    FRONTEND_DIR,                               # Para encontrar el index.html
-    os.path.join(FRONTEND_DIR, 'assets'),        # Para encontrar los .js y .css
+    FRONTEND_DIR,                               # Para encontrar index.html
+    os.path.join(FRONTEND_DIR, 'assets'),        # Para encontrar los .js y .css <--- VITAL
 ]
 
-# 3. Configuración de WhiteNoise (Crucial)
+# 3. Configuración de WhiteNoise (Asegúrate de tener estas 3 líneas)
 if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-    # Esto permite que WhiteNoise sirva los archivos aunque no estén en STATIC_ROOT todavía
     WHITENOISE_INDEX_FILE = True
+    WHITENOISE_MANIFEST_STRICT = False
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
