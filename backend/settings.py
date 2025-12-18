@@ -90,16 +90,17 @@ TEMPLATES = [
 ]
 
 # --- Mantén lo que ya tienes y agrega/revisa esto ---
-
 STATIC_URL = '/static/'
-# STATIC_ROOT debe estar en la raíz para que Render lo encuentre
-STATIC_ROOT = os.path.join(BASE_DIR.parent, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Si tienes carpetas de assets/css/js en la raíz, agrégalas aquí
 STATICFILES_DIRS = []
-# Ejemplo: si tienes una carpeta 'assets' en la raíz
-if os.path.exists(os.path.join(BASE_DIR, 'assets')):
-    STATICFILES_DIRS.append(os.path.join(BASE_DIR, 'assets'))
+# Solo si existe la carpeta 'dist' (creada por npm run build), la agregamos
+if os.path.exists(FRONTEND_DIR):
+    STATICFILES_DIRS.append(FRONTEND_DIR)
+    # Vite mete el JS/CSS en 'assets' dentro de 'dist'
+    assets_path = os.path.join(FRONTEND_DIR, 'assets')
+    if os.path.exists(assets_path):
+        STATICFILES_DIRS.append(assets_path)
 
 if not DEBUG:
     # Esto es lo que ya tienes configurado
