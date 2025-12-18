@@ -97,7 +97,7 @@ STATIC_ROOT = os.path.join(BASE_DIR.parent, 'staticfiles')
 
 # Configuración para que Django encuentre los archivos de Vite
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR.parent, 'frontend', 'dist', 'assets'),
+    os.path.join(FRONTEND_DIR, 'assets'),
 ]
 
 if not DEBUG:
