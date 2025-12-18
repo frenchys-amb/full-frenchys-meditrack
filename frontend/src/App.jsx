@@ -8,7 +8,7 @@ import StorageCheckList from "./components/Storage/StorageCheckList";
 import MedicationExpensesPage from "./components/Medication/MedicationExpensesPage";
 import AmbulanceCheckForm from "./components/Ambulance/AmbulanceCheckForm";
 import MedicationExpensesForm from "./components/Medication/MedicationExpenseForm";
-import TransferForm from "./components/transfer/TransferForm";
+import TransferForm from "./components/Transfer/TransferForm";
 import AmbulanceCheckList from "./components/Ambulance/AmbulanceCheck/AmbulanceChecksList";
 import AmbulanceEquipment from "./components/Ambulance/AmbulanceEquipment";
 import AmbulanceCurrentInventory from "./components/Ambulance/AmbulanceInventory/AmbulanceCurrentInventory";
