@@ -70,20 +70,39 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
+# 1. Definir la ruta a la carpeta de compilación de React/Vite
+FRONTEND_DIR = os.path.join(BASE_DIR.parent, 'frontend', 'dist')
+
+# 2. Configurar TEMPLATES para encontrar el index.html
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [FRONTEND_DIR], # <--- Aquí Django buscará el index.html
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
+            ],   
         },
     },
 ]
+
+# --- Mantén lo que ya tienes y agrega/revisa esto ---
+
+STATIC_URL = '/static/'
+# STATIC_ROOT debe estar en la raíz para que Render lo encuentre
+STATIC_ROOT = os.path.join(BASE_DIR.parent, 'staticfiles')
+
+# Configuración para que Django encuentre los archivos de Vite
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR.parent, 'frontend', 'dist', 'assets'),
+]
+
+if not DEBUG:
+    # Esto es lo que ya tienes configurado
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
@@ -137,17 +156,6 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
-
-# -------------------------------
-# 🔹 Archivos Estáticos (WhiteNoise Config)
-# -------------------------------
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-# Esto permite que los estilos se vean en Render
-# --- BUSCA ESTA PARTE EN TU ARCHIVO ---
-if not DEBUG:
-    # Cambia CompressedManifestStaticFilesStorage por esta otra:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
