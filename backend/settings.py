@@ -144,8 +144,10 @@ SIMPLE_JWT = {
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Esto permite que los estilos se vean en Render
+# --- BUSCA ESTA PARTE EN TU ARCHIVO ---
 if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    # Cambia CompressedManifestStaticFilesStorage por esta otra:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -153,6 +155,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS / CSRF
 # -------------------------------
 CORS_ALLOW_ALL_ORIGINS = True # Ajustar en producción real
+
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = ["https://mi-backend-frenchys.onrender.com", "http://localhost:3000"]
 LOGGING = {
