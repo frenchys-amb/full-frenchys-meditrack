@@ -1,12 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/', // Asegura que los assets se busquen desde la raíz
+  // 'base' debe ser '/' para que Django encuentre los archivos en la raíz de static
+  base: '/', 
   build: {
-    outDir: 'dist', // Nombre de la carpeta de salida
-    emptyOutDir: true, // Limpia la carpeta antes de construir
-  }
+    outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true,
+    rollupOptions: {
+      // Forzamos a Vite a usar este archivo como entrada
+      input: resolve(__dirname, 'index.html'),
+    },
+  },
 })
