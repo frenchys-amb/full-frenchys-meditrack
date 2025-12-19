@@ -28,7 +28,7 @@ urlpatterns = [
 ]
 
 # Servir archivos estáticos (CSS, JS, Imágenes)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static('/', document_root=os.path.join(settings.BASE_DIR, 'frontend', 'dist'))
 
 # EL CATCH-ALL SIEMPRE AL FINAL DE TODO
 urlpatterns += [
